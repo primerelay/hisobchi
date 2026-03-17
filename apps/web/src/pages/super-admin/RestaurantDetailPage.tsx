@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { superAdminApi } from '../../services/api';
 import { formatCurrency, formatDateShort } from '@repo/utils';
 import { PLAN_LABELS } from '@repo/constants';
+import PasswordInput from '../../components/ui/PasswordInput';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -341,16 +342,12 @@ export default function RestaurantDetailPage() {
 
           {changingPassword ? (
             <div className="space-y-4">
-              <div>
-                <label className="label">Yangi parol</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Kamida 6 ta belgi"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
+              <PasswordInput
+                label="Yangi parol"
+                placeholder="Kamida 6 ta belgi"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
               <div className="flex gap-3">
                 <button
                   onClick={() => {

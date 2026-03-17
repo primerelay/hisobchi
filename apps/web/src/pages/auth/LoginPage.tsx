@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../services/api';
+import PasswordInput from '../../components/ui/PasswordInput';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -65,16 +66,12 @@ export default function LoginPage() {
               />
             </div>
 
-            <div>
-              <label className="label">Parol</label>
-              <input
-                type="password"
-                className="input"
-                placeholder="Parolni kiriting"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <PasswordInput
+              label="Parol"
+              placeholder="Parolni kiriting"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
             <button
               type="submit"

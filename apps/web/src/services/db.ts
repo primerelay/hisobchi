@@ -1,13 +1,29 @@
 import Dexie, { Table } from 'dexie';
-import type { MenuItem, Room, Order, OrderItem } from '@repo/types';
+import type { OrderItem } from '@repo/types';
 
-export interface LocalMenuItem extends Omit<MenuItem, '_id' | 'restaurantId' | 'createdAt' | 'updatedAt'> {
+export interface LocalMenuItem {
   _id: string;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  sortOrder: number;
+  isActive: boolean;
 }
 
-export interface LocalRoom extends Omit<Room, '_id' | 'restaurantId' | 'createdAt' | 'updatedAt'> {
+export interface LocalRoom {
   _id: string;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
   currentOrderId: string | null;
+  // Server'dan kelgan order ma'lumotlari
+  currentOrder?: {
+    _id: string;
+    totalPrice: number;
+    waiterId: string;
+    waiterName: string;
+  } | null;
 }
 
 export interface LocalOrder {
@@ -38,7 +54,7 @@ export interface SyncQueueItem {
   status: 'pending' | 'syncing' | 'failed';
 }
 
-export interface SyncMetadata {
+export interface CacheMetadata {
   key: string;
   value: string | number;
 }
@@ -48,12 +64,12 @@ class OshxonaDB extends Dexie {
   rooms!: Table<LocalRoom>;
   orders!: Table<LocalOrder>;
   syncQueue!: Table<SyncQueueItem>;
-  metadata!: Table<SyncMetadata>;
+  metadata!: Table<CacheMetadata>;
 
   constructor() {
     super('oshxona-pos');
 
-    this.version(1).stores({
+    this.version(2).stores({
       menuItems: '_id, category, isActive, sortOrder',
       rooms: '_id, isActive, sortOrder',
       orders: '_id, clientId, roomId, waiterId, status, syncStatus, updatedAt',
@@ -65,7 +81,7 @@ class OshxonaDB extends Dexie {
 
 export const db = new OshxonaDB();
 
-// Helper functions
+// Cache helper functions
 export async function getLastSyncTime(): Promise<number> {
   const meta = await db.metadata.get('lastSyncAt');
   return (meta?.value as number) || 0;
@@ -83,4 +99,14 @@ export async function clearAllData(): Promise<void> {
     await db.syncQueue.clear();
     await db.metadata.clear();
   });
+}
+
+// Cache timestamp helpers
+export async function getCacheTimestamp(key: string): Promise<number> {
+  const meta = await db.metadata.get(key);
+  return (meta?.value as number) || 0;
+}
+
+export async function setCacheTimestamp(key: string): Promise<void> {
+  await db.metadata.put({ key, value: Date.now() });
 }

@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { roomsApi } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
-import { useOrderStore } from '../../stores/orderStore';
+import { useRooms } from '../../hooks/useRooms';
 import RoomCard from '../../components/waiter/RoomCard';
 
 interface RoomWithOrder {
@@ -19,63 +17,12 @@ interface RoomWithOrder {
 }
 
 export default function RoomSelectionPage() {
-  const [rooms, setRooms] = useState<RoomWithOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const { user } = useAuthStore();
   const navigate = useNavigate();
-
-  // Barcha xonalar uchun local orderlar
-  const roomOrders = useOrderStore((state) => state.roomOrders);
-
-  const loadRooms = useCallback(async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    }
-
-    try {
-      const { data } = await roomsApi.getAll({ isActive: true });
-      setRooms(data.rooms);
-    } catch (error) {
-      console.error('Error loading rooms:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadRooms();
-  }, [loadRooms]);
-
-  // Local o'zgarishlarni server data bilan birlashtirish
-  const roomsWithLocalChanges = useMemo(() => {
-    return rooms.map((room) => {
-      const localRoomOrder = roomOrders[room._id];
-
-      // Agar shu xonada local o'zgarishlar bo'lsa
-      if (localRoomOrder?.isDirty && localRoomOrder.order.items.length > 0) {
-        return {
-          ...room,
-          currentOrder: {
-            _id: localRoomOrder.order._id,
-            totalPrice: localRoomOrder.order.totalPrice,
-            waiterId: localRoomOrder.order.waiterId,
-            waiterName: user?.name || '',
-          },
-        };
-      }
-
-      return room;
-    });
-  }, [rooms, roomOrders, user?.name]);
+  const { rooms, loading, refreshing, isOnline, refresh } = useRooms();
 
   const handleRoomClick = (room: RoomWithOrder) => {
     navigate(`/waiter/rooms/${room._id}`);
-  };
-
-  const handleRefresh = () => {
-    loadRooms(true);
   };
 
   if (loading) {
@@ -91,11 +38,18 @@ export default function RoomSelectionPage() {
       {/* Header */}
       <div className="bg-white px-4 py-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">Xonalar</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-gray-900">Xonalar</h1>
+            {!isOnline && (
+              <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                Offline
+              </span>
+            )}
+          </div>
           <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            onClick={refresh}
+            disabled={refreshing || !isOnline}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
           >
             <svg
               className={`w-5 h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`}
@@ -133,7 +87,7 @@ export default function RoomSelectionPage() {
       {/* Room grid */}
       <div className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {roomsWithLocalChanges.map((room) => (
+          {rooms.map((room) => (
             <RoomCard
               key={room._id}
               room={room}
@@ -155,7 +109,9 @@ export default function RoomSelectionPage() {
                 />
               </svg>
             </div>
-            <p className="text-gray-500">Xonalar topilmadi</p>
+            <p className="text-gray-500">
+              {isOnline ? 'Xonalar topilmadi' : 'Offline rejimda. Avval onlayn bo\'lganingizda xonalar yuklanadi.'}
+            </p>
           </div>
         )}
       </div>

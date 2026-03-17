@@ -5,6 +5,9 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import './index.css';
 
+// Initialize offline services (sync listeners)
+import './services/syncService';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>

@@ -1,6 +1,7 @@
 import { db, SyncQueueItem, LocalOrder } from './db';
 import { syncApi, ordersApi } from './api';
 import { useUIStore } from '../stores/uiStore';
+import { cacheService } from './cacheService';
 import toast from 'react-hot-toast';
 
 export interface SyncOperation {
@@ -27,7 +28,7 @@ export const syncService = {
   },
 
   async processSyncQueue(): Promise<void> {
-    const { setOnline, setSyncing } = useUIStore.getState();
+    const { setSyncing } = useUIStore.getState();
 
     if (!navigator.onLine) {
       return;
@@ -44,6 +45,9 @@ export const syncService = {
 
     setSyncing(true);
 
+    let successCount = 0;
+    let failCount = 0;
+
     for (const item of pendingItems) {
       try {
         await db.syncQueue.update(item.id, { status: 'syncing' });
@@ -52,7 +56,7 @@ export const syncService = {
 
         await db.syncQueue.delete(item.id);
 
-        // Update local order status if it's a close operation
+        // Update local order status
         if (item.type === 'CLOSE_ORDER') {
           const payload = item.payload as { orderId?: string; _id?: string };
           const orderId = payload.orderId || payload._id;
@@ -60,6 +64,8 @@ export const syncService = {
             await db.orders.update(orderId, { syncStatus: 'synced' });
           }
         }
+
+        successCount++;
       } catch (error) {
         console.error('Sync error for item:', item.id, error);
 
@@ -69,6 +75,7 @@ export const syncService = {
             status: 'failed',
             attempts: newAttempts,
           });
+          failCount++;
         } else {
           await db.syncQueue.update(item.id, {
             status: 'pending',
@@ -80,14 +87,11 @@ export const syncService = {
 
     setSyncing(false);
 
-    // Check if all items were synced
-    const remainingPending = await db.syncQueue.where('status').equals('pending').count();
-    const failedCount = await db.syncQueue.where('status').equals('failed').count();
-
-    if (remainingPending === 0 && failedCount === 0) {
-      toast.success('Barcha ma\'lumotlar sinxronlandi');
-    } else if (failedCount > 0) {
-      toast.error(`${failedCount} ta buyurtma sinxronlanmadi`);
+    // Notification
+    if (successCount > 0 && failCount === 0) {
+      toast.success(`${successCount} ta buyurtma sinxronlandi`);
+    } else if (failCount > 0) {
+      toast.error(`${failCount} ta buyurtma sinxronlanmadi`);
     }
   },
 
@@ -95,11 +99,20 @@ export const syncService = {
     switch (item.type) {
       case 'CREATE_ORDER': {
         const payload = item.payload as { roomId: string; items?: { menuItemId: string; quantity: number }[] };
-        await ordersApi.create({
+        const response = await ordersApi.create({
           roomId: payload.roomId,
           items: payload.items,
           clientId: item.clientId,
         });
+
+        // Update local order with server ID
+        const localOrders = await db.orders.where('clientId').equals(item.clientId).toArray();
+        if (localOrders.length > 0) {
+          await db.orders.update(localOrders[0]._id!, {
+            _id: response.data.order._id,
+            syncStatus: 'synced',
+          });
+        }
         break;
       }
 
@@ -147,19 +160,58 @@ export const syncService = {
   async clearFailedItems(): Promise<void> {
     await db.syncQueue.where('status').equals('failed').delete();
   },
+
+  // Full sync - rooms va menu itemlarni yangilash
+  async fullSync(): Promise<void> {
+    if (!navigator.onLine) return;
+
+    try {
+      const { roomsApi, menuItemsApi } = await import('./api');
+
+      const [roomsRes, menuRes] = await Promise.all([
+        roomsApi.getAll({ isActive: true }),
+        menuItemsApi.getAll({ isActive: true }),
+      ]);
+
+      await cacheService.cacheRooms(roomsRes.data.rooms);
+      await cacheService.cacheMenuItems(menuRes.data.items);
+
+      console.log('Full sync completed');
+    } catch (error) {
+      console.error('Full sync failed:', error);
+    }
+  },
 };
 
 // Auto-sync when coming back online
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     console.log('Network online - starting sync');
-    syncService.processSyncQueue();
+    // First sync pending orders, then refresh cache
+    syncService.processSyncQueue().then(() => {
+      syncService.fullSync();
+    });
   });
 
-  // Also try to sync periodically when online
+  // Periodic sync when online
   setInterval(() => {
     if (navigator.onLine) {
       syncService.processSyncQueue();
     }
   }, 30000); // Every 30 seconds
+
+  // Initial sync on app load (if online)
+  if (navigator.onLine) {
+    // Delay initial sync to let app initialize
+    setTimeout(() => {
+      syncService.processSyncQueue().then(() => {
+        // Only do full sync if we have pending items or cache is empty
+        syncService.getPendingCount().then((count) => {
+          if (count > 0) {
+            syncService.fullSync();
+          }
+        });
+      });
+    }, 2000);
+  }
 }

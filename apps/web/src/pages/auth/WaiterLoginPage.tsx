@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
-import { authApi } from '../../services/api';
+import { authApi, roomsApi, menuItemsApi } from '../../services/api';
+import { cacheService } from '../../services/cacheService';
+import PasswordInput from '../../components/ui/PasswordInput';
 import toast from 'react-hot-toast';
 
 export default function WaiterLoginPage() {
@@ -33,6 +35,19 @@ export default function WaiterLoginPage() {
         user: data.user,
         restaurant: data.restaurant,
       });
+
+      // Pre-cache rooms and menu items for offline use
+      try {
+        const [roomsRes, menuRes] = await Promise.all([
+          roomsApi.getAll({ isActive: true }),
+          menuItemsApi.getAll({ isActive: true }),
+        ]);
+        await cacheService.cacheRooms(roomsRes.data.rooms);
+        await cacheService.cacheMenuItems(menuRes.data.items);
+        console.log('Initial cache completed');
+      } catch (cacheError) {
+        console.warn('Failed to pre-cache data:', cacheError);
+      }
 
       toast.success('Xush kelibsiz!');
       navigate('/waiter/rooms');
@@ -66,16 +81,13 @@ export default function WaiterLoginPage() {
               />
             </div>
 
-            <div>
-              <label className="label">Parol</label>
-              <input
-                type="password"
-                className="input text-lg py-3"
-                placeholder="Parolni kiriting"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+            <PasswordInput
+              label="Parol"
+              placeholder="Parolni kiriting"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="text-lg py-3"
+            />
 
             <button
               type="submit"

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { superAdminApi } from '../../services/api';
 import { generateSlug } from '@repo/utils';
 import { PLAN_LABELS, SUBSCRIPTION_PLANS } from '@repo/constants';
+import PasswordInput from '../../components/ui/PasswordInput';
 import toast from 'react-hot-toast';
 
 export default function CreateRestaurantPage() {
@@ -140,18 +141,17 @@ export default function CreateRestaurantPage() {
           </div>
 
           <div>
-            <label className="label">Parol</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                className="input flex-1"
-                value={formData.adminPassword}
-                onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
-              />
-              <button type="button" onClick={generatePassword} className="btn btn-secondary">
-                Generatsiya
+            <div className="flex items-center justify-between">
+              <label className="label mb-0">Parol</label>
+              <button type="button" onClick={generatePassword} className="text-xs text-primary-600 hover:underline">
+                Avtomatik yaratish
               </button>
             </div>
+            <PasswordInput
+              value={formData.adminPassword}
+              onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
+              placeholder="Parol kiriting"
+            />
           </div>
 
           <div className="flex gap-3">
