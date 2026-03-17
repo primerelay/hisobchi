@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @hisobchi/web build",
+  "installCommand": "cd ../.. && npm install -g pnpm && pnpm install",
+  "buildCommand": "cd ../.. && pnpm turbo run build --filter=@hisobchi/web",
   "outputDirectory": "dist",
-  "installCommand": "npm install -g pnpm",
   "framework": "vite",
   "rewrites": [
     {
