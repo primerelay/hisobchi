@@ -4,6 +4,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { authApi, roomsApi, menuItemsApi } from '../../services/api';
 import { cacheService } from '../../services/cacheService';
 import PasswordInput from '../../components/ui/PasswordInput';
+import Logo from '../../components/ui/Logo';
 import toast from 'react-hot-toast';
 
 export default function WaiterLoginPage() {
@@ -61,9 +62,9 @@ export default function WaiterLoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">OshxonaPOS</h1>
-          <p className="text-green-100 mt-2">Ofitsiant kirishi</p>
+        <div className="flex flex-col items-center mb-8">
+          <Logo size="xl" variant="light" />
+          <p className="text-green-100 mt-3 text-sm">Ofitsiant kirishi</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">

@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useSyncStatus } from '../../hooks/useSyncStatus';
+import Logo from '../ui/Logo';
 import clsx from 'clsx';
 
 export default function WaiterLayout() {
@@ -40,7 +41,7 @@ export default function WaiterLayout() {
                 {pendingCount} pending
               </span>
             )}
-            <span className="font-semibold text-gray-900">OshxonaPOS</span>
+            <Logo size="sm" variant="color" />
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">{user?.name}</span>

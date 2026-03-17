@@ -67,7 +67,7 @@ class OshxonaDB extends Dexie {
   metadata!: Table<CacheMetadata>;
 
   constructor() {
-    super('oshxona-pos');
+    super('hisobchi-pos');
 
     this.version(2).stores({
       menuItems: '_id, category, isActive, sortOrder',

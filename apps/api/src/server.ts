@@ -27,7 +27,7 @@ async function bootstrap() {
       console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   OshxonaPOS API Server                                   ║
+║   Hisobchi API Server                                     ║
 ║                                                            ║
 ║   Environment: ${config.env.padEnd(40)}║
 ║   Port: ${config.port.toString().padEnd(47)}║

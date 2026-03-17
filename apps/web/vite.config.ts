@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
-        name: 'OshxonaPOS',
-        short_name: 'Oshxona',
-        description: 'Restaurant order management system',
+        name: 'Hisobchi',
+        short_name: 'Hisobchi',
+        description: 'Restoran boshqaruv tizimi',
         theme_color: '#3b82f6',
         background_color: '#ffffff',
         display: 'standalone',

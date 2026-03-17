@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
+import Logo from '../ui/Logo';
 import clsx from 'clsx';
 
 const navItems = [
@@ -28,8 +29,8 @@ export default function AdminLayout() {
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex lg:flex-shrink-0">
         <div className="w-64 flex flex-col bg-white border-r border-gray-200">
-          <div className="h-16 flex items-center px-6 border-b border-gray-200">
-            <span className="text-xl font-bold text-primary-600">OshxonaPOS</span>
+          <div className="h-16 flex items-center px-4 border-b border-gray-200">
+            <Logo size="md" variant="color" />
           </div>
           <nav className="flex-1 px-3 py-4 space-y-1">
             {navItems.map((item) => (
@@ -70,7 +71,7 @@ export default function AdminLayout() {
           <div className="fixed inset-0 bg-black/50" onClick={toggleSidebar} />
           <aside className="fixed inset-y-0 left-0 w-64 bg-white z-50">
             <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-              <span className="text-xl font-bold text-primary-600">OshxonaPOS</span>
+              <Logo size="md" variant="color" />
               <button onClick={toggleSidebar} className="p-2">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

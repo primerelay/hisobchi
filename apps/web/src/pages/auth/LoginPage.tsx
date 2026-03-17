@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { authApi } from '../../services/api';
 import PasswordInput from '../../components/ui/PasswordInput';
+import Logo from '../../components/ui/Logo';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -46,9 +47,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">OshxonaPOS</h1>
-          <p className="text-primary-100 mt-2">Restoran boshqaruv tizimi</p>
+        <div className="flex flex-col items-center mb-8">
+          <Logo size="xl" variant="light" />
+          <p className="text-primary-100 mt-3 text-sm">Restoran boshqaruv tizimi</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
