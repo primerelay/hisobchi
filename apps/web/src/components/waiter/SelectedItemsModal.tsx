@@ -89,23 +89,61 @@ const SelectedItemsModal = memo(function SelectedItemsModal({
       {/* Footer */}
       <div className="border-t border-gray-200 p-3 bg-white safe-bottom">
         {/* Summary */}
-        <div className="mb-3 space-y-1">
+        <div className="mb-3 space-y-1.5">
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Mahsulotlar:</span>
             <span className="font-medium">{items.reduce((sum, i) => sum + i.quantity, 0)} ta</span>
           </div>
 
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-600">Mahsulotlar narxi:</span>
+            <span className="font-medium">{formatCurrency(totalPrice)}</span>
+          </div>
+
+          {/* Ofitsiant komissiyasi */}
           {commission && commission.percent > 0 && (
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-500">Ulush ({commission.percent}%):</span>
-              <span className="font-medium text-green-600">{formatCurrency(commission.amount)}</span>
-            </div>
+            <>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Xizmat uchun ({commission.percent}%):</span>
+                <span className="font-medium text-green-600">+{formatCurrency(commission.amount)}</span>
+              </div>
+
+              {/* Umumiy yig'indi - KATTA */}
+              <div className="mt-2 p-3 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl">
+                <div className="flex justify-between items-center text-white">
+                  <span className="font-medium">UMUMIY HISOB:</span>
+                  <span className="text-2xl font-black">
+                    {formatCurrency(totalPrice + commission.amount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ofitsiant ulushi alohida */}
+              <div className="p-2.5 bg-green-50 rounded-lg border border-green-100">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-green-800">Sizning ulushingiz</span>
+                  </div>
+                  <span className="text-base font-bold text-green-600">
+                    {formatCurrency(commission.amount)}
+                  </span>
+                </div>
+              </div>
+            </>
           )}
 
-          <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-            <span className="font-medium text-gray-900">Jami:</span>
-            <span className="text-xl font-bold text-gray-900">{formatCurrency(totalPrice)}</span>
-          </div>
+          {/* Agar komissiya yo'q bo'lsa, oddiy jami */}
+          {(!commission || commission.percent === 0) && (
+            <div className="mt-2 p-3 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl">
+              <div className="flex justify-between items-center text-white">
+                <span className="font-medium">JAMI HISOB:</span>
+                <span className="text-2xl font-black">{formatCurrency(totalPrice)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

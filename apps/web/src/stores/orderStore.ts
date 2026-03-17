@@ -5,6 +5,7 @@ import { ordersApi } from '../services/api';
 import { db, LocalOrder } from '../services/db';
 import { syncService } from '../services/syncService';
 import { useUIStore } from './uiStore';
+import { useAuthStore } from './authStore';
 import toast from 'react-hot-toast';
 
 interface RoomOrderState {
@@ -32,6 +33,7 @@ interface OrderState {
   removeItem: (roomId: string, menuItemId: string) => void;
   updateItemQuantity: (roomId: string, menuItemId: string, quantity: number) => void;
   clearOrder: (roomId: string) => void;
+  syncCommission: (roomId: string) => void; // Ofitsiant komissiyasini yangilash
 
   // Sync
   syncWithServer: (roomId: string) => Promise<void>;
@@ -258,6 +260,42 @@ export const useOrderStore = create<OrderState>()(
                 },
               },
               isDirty: true,
+            },
+          },
+        });
+      },
+
+      // Ofitsiantning hozirgi komissiyasini buyurtmaga sync qilish
+      syncCommission: (roomId) => {
+        const { roomOrders } = get();
+        const roomOrder = roomOrders[roomId];
+        if (!roomOrder) return;
+
+        const { user, restaurant } = useAuthStore.getState();
+        const currentCommissionPercent = user?.commissionPercent ?? restaurant?.settings?.defaultCommission ?? 0;
+
+        // Agar komissiya o'zgarmagan bo'lsa, hech narsa qilmaymiz
+        if (roomOrder.order.waiterCommission.percent === currentCommissionPercent) return;
+
+        // Komissiyani yangilash va qayta hisoblash
+        const { totalPrice, commissionAmount } = calculateTotals(
+          roomOrder.order.items,
+          currentCommissionPercent
+        );
+
+        set({
+          roomOrders: {
+            ...roomOrders,
+            [roomId]: {
+              ...roomOrder,
+              order: {
+                ...roomOrder.order,
+                totalPrice,
+                waiterCommission: {
+                  percent: currentCommissionPercent,
+                  amount: commissionAmount,
+                },
+              },
             },
           },
         });

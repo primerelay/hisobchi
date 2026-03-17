@@ -63,9 +63,13 @@ export default function OrderPage() {
   const handleCloseOrder = async () => {
     if (!order || order.items.length === 0) return;
 
-    if (
-      !confirm(`Buyurtmani yopishni tasdiqlaysizmi?\n\nJami: ${formatCurrency(order.totalPrice)}`)
-    ) {
+    const grandTotal = order.totalPrice + (hasCommission ? order.waiterCommission.amount : 0);
+
+    const confirmMessage = hasCommission
+      ? `Buyurtmani yopishni tasdiqlaysizmi?\n\nMahsulotlar: ${formatCurrency(order.totalPrice)}\nXizmat (${order.waiterCommission.percent}%): ${formatCurrency(order.waiterCommission.amount)}\n\nUMUMIY: ${formatCurrency(grandTotal)}\n\nSizning ulushingiz: ${formatCurrency(order.waiterCommission.amount)}`
+      : `Buyurtmani yopishni tasdiqlaysizmi?\n\nJami: ${formatCurrency(order.totalPrice)}`;
+
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -79,7 +83,8 @@ export default function OrderPage() {
     }
   };
 
-  const commissionEnabled = restaurant?.settings.commissionEnabled;
+  // Komissiya - agar ofitsiantda yoki restoranda komissiya bo'lsa ko'rsatamiz
+  const hasCommission = order?.waiterCommission && order.waiterCommission.percent > 0;
 
   if (loading) {
     return (
@@ -160,59 +165,77 @@ export default function OrderPage() {
           onClick={() => setShowSelectedModal(true)}
           disabled={closing}
           className={clsx(
-            'w-full py-3 px-4 rounded-xl flex items-center justify-between',
+            'w-full py-3 px-4 rounded-xl',
             'bg-primary-600 text-white shadow-lg',
             'transition-all active:scale-[0.98]',
             closing && 'opacity-50'
           )}
         >
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              {totalItemsCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-white text-primary-600 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {totalItemsCount}
-                </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                {totalItemsCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-white text-primary-600 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {totalItemsCount}
+                  </span>
+                )}
+              </div>
+              <span className="font-medium text-sm">
+                {totalItemsCount > 0 ? `${totalItemsCount} ta` : 'Savat'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {closing ? (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+              ) : (
+                <>
+                  <span className="text-lg font-black">
+                    {formatCurrency(
+                      (order?.totalPrice || 0) + (hasCommission ? order?.waiterCommission.amount || 0 : 0)
+                    )}
+                  </span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </>
               )}
             </div>
-            <span className="font-medium text-sm">
-              {totalItemsCount > 0 ? `${totalItemsCount} ta` : 'Savat'}
-            </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {closing ? (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-            ) : (
-              <>
-                <span className="text-base font-bold">{formatCurrency(order?.totalPrice || 0)}</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </>
-            )}
-          </div>
+          {/* Komissiya tafsilotlari */}
+          {hasCommission && order && order.waiterCommission.amount > 0 && (
+            <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center justify-between text-xs">
+              <span className="text-white/70">
+                {formatCurrency(order.totalPrice)} + {order.waiterCommission.percent}% xizmat
+              </span>
+              <span className="font-semibold text-green-300">
+                Ulush: {formatCurrency(order.waiterCommission.amount)}
+              </span>
+            </div>
+          )}
         </button>
       </div>
 
@@ -222,11 +245,7 @@ export default function OrderPage() {
         onClose={() => setShowSelectedModal(false)}
         items={order?.items || []}
         totalPrice={order?.totalPrice || 0}
-        commission={
-          commissionEnabled && order?.waiterCommission.percent
-            ? order.waiterCommission
-            : undefined
-        }
+        commission={hasCommission ? order?.waiterCommission : undefined}
         onUpdateQuantity={updateItemQuantity}
         onClearOrder={clearOrder}
         onCloseOrder={handleCloseOrder}

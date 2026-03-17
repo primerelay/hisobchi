@@ -1,11 +1,11 @@
 {
-  "name": "oshxona-pos",
+  "name": "hisobchi",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "turbo dev",
-    "dev:api": "turbo dev --filter=@oshxona/api",
-    "dev:web": "turbo dev --filter=@oshxona/web",
+    "dev:api": "turbo dev --filter=@hisobchi/api",
+    "dev:web": "turbo dev --filter=@hisobchi/web",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",

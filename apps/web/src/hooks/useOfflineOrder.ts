@@ -42,11 +42,19 @@ export function useOfflineOrder(roomId: string | undefined): UseOfflineOrderRetu
     updateItemQuantity: storeUpdateQuantity,
     clearOrder: storeClearOrder,
     closeOrder: storeCloseOrder,
+    syncCommission,
   } = useOrderStore();
 
   // Get current room's order
   const order = useOrderStore((state) => (roomId ? state.roomOrders[roomId]?.order : null) || null);
   const isDirty = useOrderStore((state) => (roomId ? state.roomOrders[roomId]?.isDirty : false) || false);
+
+  // Xonaga kirganda komissiyani sync qilish
+  useEffect(() => {
+    if (roomId && hasHydrated) {
+      syncCommission(roomId);
+    }
+  }, [roomId, hasHydrated, syncCommission, user?.commissionPercent]);
 
   // Load data
   useEffect(() => {
@@ -164,6 +172,10 @@ export function useOfflineOrder(roomId: string | undefined): UseOfflineOrderRetu
     const now = new Date();
     const clientId = crypto.randomUUID();
 
+    // Ofitsiantning shaxsiy komissiyasini ishlatish
+    // Agar ofitsiantda bo'lmasa, restoranning default komissiyasini ishlatish
+    const commissionPercent = user?.commissionPercent ?? restaurant?.settings?.defaultCommission ?? 0;
+
     return {
       _id: clientId,
       restaurantId: restaurant?._id || '',
@@ -172,7 +184,7 @@ export function useOfflineOrder(roomId: string | undefined): UseOfflineOrderRetu
       items: [],
       totalPrice: 0,
       waiterCommission: {
-        percent: restaurant?.settings?.defaultCommission || 0,
+        percent: commissionPercent,
         amount: 0,
       },
       status: 'open',
