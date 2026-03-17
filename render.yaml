@@ -7,7 +7,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @hisobchi/api build
+    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install && pnpm build
     startCommand: node apps/api/dist/server.js
     healthCheckPath: /api/v1/health
     envVars:
