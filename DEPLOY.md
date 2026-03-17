@@ -126,7 +126,7 @@ git push -u origin main
 | **Branch** | `main` |
 | **Root Directory** | _(bo'sh qoldiring)_ |
 | **Runtime** | Node |
-| **Build Command** | `npm install -g pnpm && pnpm install && pnpm --filter @hisobchi/api build` |
+| **Build Command** | `npm install -g pnpm && NODE_ENV=development pnpm install && pnpm --filter @hisobchi/api build` |
 | **Start Command** | `node apps/api/dist/server.js` |
 | **Instance Type** | Free |
 
