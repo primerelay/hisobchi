@@ -45,12 +45,10 @@ export default function RestaurantDetailPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Edit states
   const [editingRestaurant, setEditingRestaurant] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
-  // Form states
   const [restaurantForm, setRestaurantForm] = useState({
     name: '',
     phone: '',
@@ -161,6 +159,17 @@ export default function RestaurantDetailPage() {
     }
   };
 
+  const getPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'premium':
+        return 'bg-purple-100 text-purple-700';
+      case 'basic':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -172,57 +181,64 @@ export default function RestaurantDetailPage() {
   if (!restaurant) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/super-admin/restaurants')}
             className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{restaurant.name}</h1>
-          <span className={clsx(
-            'px-2 py-1 text-xs rounded-full',
-            restaurant.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-          )}>
-            {restaurant.isActive ? 'Faol' : 'Nofaol'}
-          </span>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{restaurant.name}</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={clsx(
+                'px-2 py-0.5 text-xs rounded-full',
+                restaurant.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+              )}>
+                {restaurant.isActive ? 'Faol' : 'Nofaol'}
+              </span>
+              <span className={clsx('px-2 py-0.5 text-xs rounded-full', getPlanColor(restaurant.subscription.plan))}>
+                {PLAN_LABELS[restaurant.subscription.plan]}
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={handleDelete}
-          className="btn bg-red-600 text-white hover:bg-red-700"
+          className="btn bg-red-600 text-white hover:bg-red-700 text-sm sm:text-base"
         >
           O'chirish
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="card p-4">
-          <p className="text-sm text-gray-500">Tarif</p>
-          <p className="text-lg font-semibold">{PLAN_LABELS[restaurant.subscription.plan]}</p>
-          <p className="text-xs text-gray-400">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="card p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500">Tarif</p>
+          <p className="text-base sm:text-lg font-semibold">{PLAN_LABELS[restaurant.subscription.plan]}</p>
+          <p className="text-xs text-gray-400 mt-0.5">
             {formatDateShort(restaurant.subscription.expiresAt)} gacha
           </p>
         </div>
-        <div className="card p-4">
-          <p className="text-sm text-gray-500">Buyurtmalar</p>
-          <p className="text-lg font-semibold">{stats?.orderCount || 0}</p>
+        <div className="card p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500">Buyurtmalar</p>
+          <p className="text-base sm:text-lg font-semibold">{stats?.orderCount || 0}</p>
         </div>
-        <div className="card p-4">
-          <p className="text-sm text-gray-500">Jami daromad</p>
-          <p className="text-lg font-semibold">{formatCurrency(stats?.totalRevenue || 0)}</p>
+        <div className="card p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-gray-500">Daromad</p>
+          <p className="text-base sm:text-lg font-semibold truncate">{formatCurrency(stats?.totalRevenue || 0)}</p>
         </div>
       </div>
 
       {/* Restaurant Info */}
-      <div className="card p-6">
+      <div className="card p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Restoran ma'lumotlari</h2>
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Restoran ma'lumotlari</h2>
           {!editingRestaurant && (
             <button
               onClick={() => setEditingRestaurant(true)}
@@ -275,14 +291,14 @@ export default function RestaurantDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setEditingRestaurant(false)}
-                className="btn btn-secondary"
+                className="flex-1 btn btn-secondary"
                 disabled={saving}
               >
                 Bekor qilish
               </button>
               <button
                 onClick={handleSaveRestaurant}
-                className="btn-primary"
+                className="flex-1 btn-primary"
                 disabled={saving}
               >
                 {saving ? 'Saqlanmoqda...' : 'Saqlash'}
@@ -291,19 +307,19 @@ export default function RestaurantDetailPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between py-2 border-b text-sm sm:text-base">
               <span className="text-gray-500">Slug</span>
               <span className="font-medium">{restaurant.slug}</span>
             </div>
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between py-2 border-b text-sm sm:text-base">
               <span className="text-gray-500">Telefon</span>
               <span className="font-medium">{restaurant.phone}</span>
             </div>
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between py-2 border-b text-sm sm:text-base">
               <span className="text-gray-500">Manzil</span>
               <span className="font-medium">{restaurant.address || '-'}</span>
             </div>
-            <div className="flex justify-between py-2">
+            <div className="flex justify-between py-2 text-sm sm:text-base">
               <span className="text-gray-500">Komissiya</span>
               <span className="font-medium">
                 {restaurant.settings.commissionEnabled
@@ -317,10 +333,10 @@ export default function RestaurantDetailPage() {
 
       {/* Admin Info */}
       {admin && (
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Admin hisobi</h2>
-            <div className="flex gap-2">
+        <div className="card p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Admin hisobi</h2>
+            <div className="flex gap-3">
               {!editingAdmin && !changingPassword && (
                 <>
                   <button
@@ -354,17 +370,17 @@ export default function RestaurantDetailPage() {
                     setChangingPassword(false);
                     setNewPassword('');
                   }}
-                  className="btn btn-secondary"
+                  className="flex-1 btn btn-secondary"
                   disabled={saving}
                 >
                   Bekor qilish
                 </button>
                 <button
                   onClick={handleChangePassword}
-                  className="btn-primary"
+                  className="flex-1 btn-primary"
                   disabled={saving}
                 >
-                  {saving ? 'Saqlanmoqda...' : 'Parolni o\'zgartirish'}
+                  {saving ? 'Saqlanmoqda...' : 'O\'zgartirish'}
                 </button>
               </div>
             </div>
@@ -391,14 +407,14 @@ export default function RestaurantDetailPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setEditingAdmin(false)}
-                  className="btn btn-secondary"
+                  className="flex-1 btn btn-secondary"
                   disabled={saving}
                 >
                   Bekor qilish
                 </button>
                 <button
                   onClick={handleSaveAdmin}
-                  className="btn-primary"
+                  className="flex-1 btn-primary"
                   disabled={saving}
                 >
                   {saving ? 'Saqlanmoqda...' : 'Saqlash'}
@@ -407,15 +423,15 @@ export default function RestaurantDetailPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b text-sm sm:text-base">
                 <span className="text-gray-500">Ismi</span>
                 <span className="font-medium">{admin.name}</span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b text-sm sm:text-base">
                 <span className="text-gray-500">Telefon (login)</span>
                 <span className="font-medium font-mono">{admin.phone}</span>
               </div>
-              <div className="flex justify-between py-2">
+              <div className="flex justify-between py-2 text-sm sm:text-base">
                 <span className="text-gray-500">Holat</span>
                 <span className={clsx(
                   'px-2 py-1 text-xs rounded-full',
