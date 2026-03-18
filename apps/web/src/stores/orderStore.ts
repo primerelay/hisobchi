@@ -74,14 +74,44 @@ export const useOrderStore = create<OrderState>()(
         const { roomOrders } = get();
         const existing = roomOrders[roomId];
 
+        // Ofitsiantning hozirgi komissiyasini olish
+        const { user, restaurant } = useAuthStore.getState();
+        const currentCommissionPercent = user?.commissionPercent ?? restaurant?.settings?.defaultCommission ?? 0;
+
+        // Komissiyani qayta hisoblash (ofitsiantning hozirgi komissiyasi bilan)
+        const { totalPrice, commissionAmount } = calculateTotals(order.items, currentCommissionPercent);
+
+        const updatedOrder: Order = {
+          ...order,
+          totalPrice,
+          waiterCommission: {
+            percent: currentCommissionPercent,
+            amount: commissionAmount,
+          },
+        };
+
         // Agar local o'zgarishlar bo'lsa, ularni saqlab qolamiz
         if (existing?.isDirty && existing.order.items.length > 0) {
+          // Local order uchun ham komissiyani yangilash
+          const { totalPrice: localTotal, commissionAmount: localCommission } = calculateTotals(
+            existing.order.items,
+            currentCommissionPercent
+          );
+
           set({
             roomOrders: {
               ...roomOrders,
               [roomId]: {
                 ...existing,
-                serverOrder: order,
+                order: {
+                  ...existing.order,
+                  totalPrice: localTotal,
+                  waiterCommission: {
+                    percent: currentCommissionPercent,
+                    amount: localCommission,
+                  },
+                },
+                serverOrder: updatedOrder,
               },
             },
           });
@@ -93,8 +123,8 @@ export const useOrderStore = create<OrderState>()(
           roomOrders: {
             ...roomOrders,
             [roomId]: {
-              order,
-              serverOrder: order,
+              order: updatedOrder,
+              serverOrder: updatedOrder,
               isDirty: false,
             },
           },
