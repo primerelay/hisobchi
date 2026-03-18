@@ -7,10 +7,17 @@ import PasswordInput from '../../components/ui/PasswordInput';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
+interface CreatedCredentials {
+  restaurantName: string;
+  adminPhone: string;
+  adminPassword: string;
+}
+
 export default function CreateRestaurantPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [createdCredentials, setCreatedCredentials] = useState<CreatedCredentials | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -48,12 +55,22 @@ export default function CreateRestaurantPage() {
     try {
       await superAdminApi.createRestaurant(formData);
       toast.success('Restoran yaratildi!');
-      navigate('/super-admin/restaurants');
+      // Show credentials modal
+      setCreatedCredentials({
+        restaurantName: formData.name,
+        adminPhone: formData.adminPhone,
+        adminPassword: formData.adminPassword,
+      });
     } catch (error) {
       console.error('Error creating restaurant:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} nusxalandi!`);
   };
 
   const getPlanColor = (plan: string) => {
@@ -311,6 +328,76 @@ export default function CreateRestaurantPage() {
                 </span>
               ) : 'Yaratish'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Credentials Modal */}
+      {createdCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Restoran yaratildi!</h2>
+              <p className="text-sm text-gray-500 mt-1">{createdCredentials.restaurantName}</p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-500">Admin telefoni (login)</span>
+                  <button
+                    onClick={() => copyToClipboard(createdCredentials.adminPhone, 'Telefon')}
+                    className="text-primary-600 hover:text-primary-700"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="font-mono text-lg font-semibold">{createdCredentials.adminPhone}</p>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-amber-700">Admin paroli</span>
+                  <button
+                    onClick={() => copyToClipboard(createdCredentials.adminPassword, 'Parol')}
+                    className="text-amber-600 hover:text-amber-700"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="font-mono text-lg font-semibold text-amber-900">{createdCredentials.adminPassword}</p>
+                <p className="text-xs text-amber-600 mt-2">
+                  ⚠️ Bu parolni saqlang! Keyinchalik ko'rib bo'lmaydi.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const text = `Restoran: ${createdCredentials.restaurantName}\nLogin: ${createdCredentials.adminPhone}\nParol: ${createdCredentials.adminPassword}`;
+                  copyToClipboard(text, 'Barcha ma\'lumotlar');
+                }}
+                className="flex-1 btn btn-secondary"
+              >
+                Hammasini nusxalash
+              </button>
+              <button
+                onClick={() => navigate('/super-admin/restaurants')}
+                className="flex-1 btn-primary"
+              >
+                Tayyor
+              </button>
+            </div>
           </div>
         </div>
       )}

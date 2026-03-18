@@ -63,6 +63,8 @@ export default function RestaurantDetailPage() {
 
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
+  const [savedPassword, setSavedPassword] = useState('');
 
   useEffect(() => {
     if (id) loadData();
@@ -135,7 +137,8 @@ export default function RestaurantDetailPage() {
     setSaving(true);
     try {
       await superAdminApi.resetAdminPassword(id!, newPassword);
-      toast.success('Parol o\'zgartirildi');
+      setSavedPassword(newPassword);
+      setShowPasswordSuccess(true);
       setChangingPassword(false);
       setNewPassword('');
     } catch (error) {
@@ -143,6 +146,20 @@ export default function RestaurantDetailPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const generatePassword = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewPassword(password);
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} nusxalandi!`);
   };
 
   const handleDelete = async () => {
@@ -358,12 +375,23 @@ export default function RestaurantDetailPage() {
 
           {changingPassword ? (
             <div className="space-y-4">
-              <PasswordInput
-                label="Yangi parol"
-                placeholder="Kamida 6 ta belgi"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="label mb-0">Yangi parol</label>
+                  <button
+                    type="button"
+                    onClick={generatePassword}
+                    className="text-xs text-primary-600 hover:underline"
+                  >
+                    Avtomatik yaratish
+                  </button>
+                </div>
+                <PasswordInput
+                  placeholder="Kamida 6 ta belgi"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => {
@@ -442,6 +470,61 @@ export default function RestaurantDetailPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Password Success Modal */}
+      {showPasswordSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <div className="text-center mb-4">
+              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Parol o'zgartirildi!</h2>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-amber-700">Yangi parol</span>
+                <button
+                  onClick={() => copyToClipboard(savedPassword, 'Parol')}
+                  className="text-amber-600 hover:text-amber-700"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+              <p className="font-mono text-xl font-bold text-amber-900 text-center">{savedPassword}</p>
+              <p className="text-xs text-amber-600 mt-2 text-center">
+                Bu parolni saqlang! Keyinchalik ko'rib bo'lmaydi.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const text = `Login: ${admin?.phone}\nParol: ${savedPassword}`;
+                  copyToClipboard(text, 'Login va parol');
+                }}
+                className="flex-1 btn btn-secondary text-sm"
+              >
+                Login bilan nusxalash
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasswordSuccess(false);
+                  setSavedPassword('');
+                }}
+                className="flex-1 btn-primary text-sm"
+              >
+                Tayyor
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
