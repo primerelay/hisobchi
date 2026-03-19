@@ -100,6 +100,16 @@ export default function AdminLayout() {
                 </NavLink>
               ))}
             </nav>
+            {/* Mobile logout */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
+              <div className="text-sm text-gray-500 mb-2">{restaurant?.name}</div>
+              <button
+                onClick={handleLogout}
+                className="w-full btn btn-ghost text-red-600 hover:bg-red-50"
+              >
+                Chiqish
+              </button>
+            </div>
           </aside>
         </div>
       )}
