@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 
+// Landing page
+import LandingPage from './pages/LandingPage';
+
 // Auth pages
 import LoginPage from './pages/auth/LoginPage';
 import WaiterLoginPage from './pages/auth/WaiterLoginPage';
@@ -119,9 +122,9 @@ function App() {
         <Route path="restaurants/:id" element={<RestaurantDetailPage />} />
       </Route>
 
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Landing page */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
